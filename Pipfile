@@ -7,6 +7,9 @@ name = "pypi"
 flask = "*"
 faker = "*"
 ipython = "*"
+webargs = "*"
+requests = "*"
+httpx = "*"
 
 [dev-packages]
 
