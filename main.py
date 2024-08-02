@@ -4,18 +4,44 @@ import string
 from http import HTTPStatus
 
 import httpx
-from flask import Flask, request, Response
+from flask import Flask, request, Response, jsonify
 from webargs.flaskparser import use_kwargs
 from webargs import validate, fields
 
+from database_handler import execute_query
 from validators import password_length_config
 
 app = Flask(__name__)
 
 
-@app.route("/admin")
-def hello_world():
-    return "<p>Hello, Mykhailo!dsadasds1111</p>"
+@app.errorhandler(HTTPStatus.UNPROCESSABLE_ENTITY)
+@app.errorhandler(HTTPStatus.BAD_REQUEST)
+def error_handling(error):
+    headers = error.data.get("headers", None)
+    messages = error.data.get("messages", ["Invalid request."])
+
+    if headers:
+        return jsonify(
+            {'errors': messages},
+            error.code,
+            headers
+        )
+    return jsonify(
+        {'errors': messages},
+        error.code,
+    )
+
+
+@app.route("/admin/<int:count>/")
+def hello_world(count):
+    return f"<p>Hello, {''.join(['Mykhailo' for i in range(int(count))])}!</p>"
+
+
+# /2024/08/02
+
+# ?param1=1&param2=2&param3=3
+# /blog/sport/1/1
+# /blog/news/1/11
 
 
 @app.route("/generate-password")
@@ -63,6 +89,15 @@ def get_astronauts():
     return statistics
 
 
+@app.route('/customers')
+def get_all_customers():
+    query = "SELECT * FROM customers"
+
+    data = execute_query(query=query)
+
+    return data
+
+
 # 100 - inform
 # 200 - OK
 # 300 - Redirect
@@ -104,7 +139,7 @@ def get_astronauts():
 if __name__ == '__main__':
     app.run(
         port=5000
-        # , debug=True
+        , debug=True
     )
 
 # ll | grep 1
