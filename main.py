@@ -90,12 +90,37 @@ def get_astronauts():
 
 
 @app.route('/customers')
-def get_all_customers():
-    query = "SELECT * FROM customers"
+@use_kwargs(
+    {
+        "first_name": fields.Str(
+            required=True,
+        ),
+        "last_name": fields.Str(
+            load_default=None
+        )
+    },
+    location='query'
 
-    data = execute_query(query=query)
+)
+def get_all_customers(first_name, last_name):
+    query = "SELECT FirstName, LastName FROM customers"
 
-    return data
+    fields = {}
+
+    if first_name:
+        fields['FirstName'] = first_name
+    if last_name:
+        fields['LastName'] = last_name
+
+    if fields:
+        query += " WHERE " + " AND ".join(
+            f"{key}=?" for key in fields
+        )
+    print(query)
+
+    data = execute_query(query=query, args=tuple(fields.values()))
+
+    return '<br>'.join(str(record) for record in data)
 
 
 # 100 - inform
@@ -159,3 +184,6 @@ if __name__ == '__main__':
 # in url
 # insecure
 # filtering, search, get data.
+
+
+# blueprints
